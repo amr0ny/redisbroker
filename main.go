@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/amr0ny/redisbroker/service"
+	"github.com/amr0ny/redisbroker/store"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -10,8 +12,6 @@ import (
 	"net/http"
 	_ "net/http/pprof"
 	"os"
-	"redisbroker/service"
-	"redisbroker/store"
 	"strconv"
 	"strings"
 )

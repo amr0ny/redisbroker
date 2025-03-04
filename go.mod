@@ -1,4 +1,4 @@
-module redisbroker
+module github.com/amr0ny/redisbroker
 
 go 1.24.0
 

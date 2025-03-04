@@ -2,14 +2,14 @@ package service
 
 import (
 	"context"
+	"github.com/amr0ny/redisbroker/protobuf/queue"
+	"github.com/amr0ny/redisbroker/store"
 	"github.com/google/uuid"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
-	"redisbroker/protobuf/queue"
-	"redisbroker/store"
 	"time"
 )
 
