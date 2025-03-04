@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+package protobuf;
+
+option go_package = "protobuf/queue;";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+
+message MessageRequest {
+    string name = 1;
+    string payload = 2;
+    string topic = 4;
+}
+
+
+message MessageMetadata {
+    string id = 1;
+    google.protobuf.Timestamp dispatch_time = 2;
+}
+
+message BatchRequest {
+    string topic = 1;
+    int32 batch_size = 2;
+}
+
+message MessageBatch {
+    string name = 1;
+    string payload = 2;
+    MessageMetadata msg_metadata = 4;
+}
+message BatchResponse {
+    repeated MessageBatch messages = 1;
+    google.protobuf.Empty empty = 2;
+}
+
+service QueueService {
+    rpc AddMessage(MessageRequest) returns (google.protobuf.Empty);
+    rpc Consume(BatchRequest) returns (BatchResponse);
+}
