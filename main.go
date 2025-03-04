@@ -67,13 +67,19 @@ func main() {
 	redisPoolSize, err := strconv.Atoi(getEnv("REDIS_POOL_SIZE", "10"))
 	if err != nil {
 		log.Errorf("redis pool size should be an integer: %v", err)
+		return
 	}
 	rs, err := store.NewRedisStore(ctx, redisAddr, redisUser, redisPass, redisPoolSize)
+	if err != nil {
+		log.Fatalf("failed to create Redis store: %v", err)
+		return
+	}
 
 	port := getEnv("GRPC_PORT", defaultPort)
 	lis, err := net.Listen("tcp", port)
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
+		return
 	}
 	srv := grpc.NewServer()
 	svc := service.NewQueueService(rs)
@@ -83,5 +89,4 @@ func main() {
 	if err := srv.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}
-
 }

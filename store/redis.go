@@ -1,3 +1,6 @@
+/*
+Package store provides an interface and data structures for managing messages in a storage system.
+*/
 package store
 
 import (
@@ -7,10 +10,14 @@ import (
 	"time"
 )
 
+// RedisStore implements [Store] and wraps up a default Redis client.
 type RedisStore struct {
 	inst *redis.Client
 }
 
+// NewRedisStore initializes a new Redis client and returns a [RedisStore] instance.
+// It takes a context, Redis server address, username, password, and pool size as parameters.
+// Returns an error if the connection to Redis fails.
 func NewRedisStore(ctx context.Context, addr, user, password string, poolSize int) (*RedisStore, error) {
 	client := redis.NewClient(&redis.Options{
 		Addr:       addr,
@@ -29,6 +36,9 @@ func NewRedisStore(ctx context.Context, addr, user, password string, poolSize in
 	return &RedisStore{inst: client}, nil
 }
 
+// CreateMessage adds a new message to a Redis stream.
+// It takes a context, a Message struct, and a topic (stream name) as parameters.
+// Returns an error if the message could not be added to the stream.
 func (rs *RedisStore) CreateMessage(ctx context.Context, message Message, topic string) error {
 	_, err := rs.inst.XAdd(ctx, &redis.XAddArgs{
 		Stream: topic,
@@ -45,6 +55,9 @@ func (rs *RedisStore) CreateMessage(ctx context.Context, message Message, topic 
 	return err
 }
 
+// readAndDeleteBatchAtomic reads a batch of messages from a Redis stream and deletes them atomically.
+// It takes a context, a topic (stream name), and a batch size as parameters.
+// Returns the result of the read operation and an error if the operation fails.
 func (rs *RedisStore) readAndDeleteBatchAtomic(ctx context.Context, topic string, batchSize int32) (interface{}, error) {
 	script := `
         local result = redis.call('XREAD', 'BLOCK', 3000, 'COUNT', ARGV[1], 'STREAMS', KEYS[1])
@@ -67,6 +80,9 @@ func (rs *RedisStore) readAndDeleteBatchAtomic(ctx context.Context, topic string
 	return result, nil
 }
 
+// ReadBatch reads a batch of messages from a Redis stream and deletes them atomically.
+// It takes a context, a topic (stream name), and a batch size as parameters.
+// Returns a slice of Message structs and an error if the operation fails.
 func (rs *RedisStore) ReadBatch(ctx context.Context, topic string, batchSize int32) ([]Message, error) {
 	result, err := rs.readAndDeleteBatchAtomic(ctx, topic, batchSize)
 	if err != nil {

@@ -1,3 +1,9 @@
+/*
+Package service provides the implementation of the QueueServiceServer interface,
+which includes methods for adding messages to a store and consuming batches of messages
+from the store. The package integrates with a store interface to manage message persistence
+and retrieval.
+*/
 package service
 
 import (
@@ -13,11 +19,15 @@ import (
 	"time"
 )
 
+// QueueService implements the QueueServiceServer interface.
 type QueueService struct {
 	queue.UnimplementedQueueServiceServer
 	store store.Store
 }
 
+// AddMessage adds a new message to the store.
+// It generates a new UUID for the message ID and sets the current time as the dispatch time.
+// Returns an empty response or an error if the operation fails.
 func (qs *QueueService) AddMessage(ctx context.Context, req *queue.MessageRequest) (*emptypb.Empty, error) {
 	err := qs.store.CreateMessage(ctx, store.Message{
 		Id:           uuid.New().String(),
@@ -31,6 +41,8 @@ func (qs *QueueService) AddMessage(ctx context.Context, req *queue.MessageReques
 	return nil, nil
 }
 
+// Consume retrieves a batch of messages from the store based on the topic and batch size specified in the request.
+// It converts the messages to the appropriate protobuf format and returns them in a BatchResponse.
 func (qs *QueueService) Consume(ctx context.Context, req *queue.BatchRequest) (*queue.BatchResponse, error) {
 	batch, err := qs.store.ReadBatch(ctx, req.Topic, req.BatchSize)
 	if err != nil {
@@ -52,10 +64,12 @@ func (qs *QueueService) Consume(ctx context.Context, req *queue.BatchRequest) (*
 	return res, err
 }
 
+// NewQueueService creates a new instance of QueueService with the provided store.
 func NewQueueService(store store.Store) *QueueService {
 	return &QueueService{store: store}
 }
 
+// RegisterServiceServer registers the QueueService with the given gRPC server.
 func RegisterServiceServer(srv *grpc.Server, svc *QueueService) {
 	queue.RegisterQueueServiceServer(srv, svc)
 }
